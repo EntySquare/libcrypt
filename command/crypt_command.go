@@ -2,6 +2,7 @@ package command
 
 import (
 	"EntySquare/libcrypt"
+	"bufio"
 	"encoding/hex"
 	"github.com/spf13/cobra"
 )
@@ -15,24 +16,43 @@ func Run(appName string) {
 		Use: appName,
 	}
 	var entCmd = &cobra.Command{
-		Use:   "encode",
+		Use:   "encode [message]",
 		Short: "encode",
 		Run: func(cmd *cobra.Command, args []string) {
-			println(args[0])
-			println(args[1])
-			originData := []byte(args[1])
-			key := []byte(args[0])
+			if len(args) == 0 {
+				cmd.Help()
+				return
+			}
+			cmd.Println("please input key for content")
+			input := bufio.NewReader(cmd.InOrStdin())
+			bytes, err := input.ReadBytes('\n')
+			if err != nil {
+				panic("error")
+			}
+			originData := []byte(args[0])
+			key := bytes
 			data := libcrypt.AesEncrypt(key, []byte(CRYPT_IV), originData)
 			strData := hex.EncodeToString(data)
 			println(strData)
 		},
 	}
 	var deCmd = &cobra.Command{
-		Use:   "decode",
+		Use:   "decode [message]",
 		Short: "decode",
 		Run: func(cmd *cobra.Command, args []string) {
-			strData := args[1]
-			key := []byte(args[0])
+			if len(args) == 0 {
+				cmd.Help()
+				return
+			}
+			cmd.Println("please input key for content")
+			input := bufio.NewReader(cmd.InOrStdin())
+			bytes, err := input.ReadBytes('\n')
+			if err != nil {
+				panic("error")
+			}
+
+			strData := args[0]
+			key := bytes
 			encrData, _ := hex.DecodeString(strData)
 			data := libcrypt.AesDecrypt(key, []byte(CRYPT_IV), encrData)
 			println(string(data))
